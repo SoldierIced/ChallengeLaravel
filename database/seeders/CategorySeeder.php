@@ -15,7 +15,7 @@ class CategorySeeder extends Seeder
     {
         $categories = ['ACCESSIBILITY', 'BEST_PRACTICES', 'PERFORMANCE', 'PWA', 'SEO'];
         foreach ($categories as $category) {
-            Category::create(['name' => $category]);
+            Category::firstOrCreate(['name' => $category]);
         }
     }
 }

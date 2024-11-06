@@ -15,7 +15,7 @@ class StrategySeeder extends Seeder
     {
         $strategies = ['DESKTOP', 'MOBILE'];
         foreach ($strategies as $strategy) {
-            Strategy::create(['name' => $strategy]);
+            Strategy::firstOrCreate(['name' => $strategy]);
         }
     }
 }

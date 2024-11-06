@@ -52,132 +52,6 @@
 @section('scripts')
     <script>
         let dataMetrics = {};
-        let readme = `
-        Broobe Challenge - Metrics Analysis with Laravel
-
-        This project is a Laravel application designed to fetch, store, and display Google PageSpeed Insights metrics for various categories and strategies. Users can input a URL and select specific metrics (e.g., Accessibility, Performance, SEO) and strategies (Desktop or Mobile) to get insights into the webpage’s performance.
-
-        ## Requirements
-
-        - **Laravel**: 10
-        - **PHP**: >= 8.0
-        - **Composer**
-        - **Node.js & NPM** (for frontend dependencies)
-
-        ## Installation
-
-        Follow these steps to set up and run the project locally.
-
-        ### 1. Clone the repository
-
-        \`\`\`bash
-            git clone <repository-url>
-            cd <repository-folder>
-            \`\`\`
-
-        ### 2. Install Composer Dependencies
-
-        \`\`\`bash
-            composer install
-            \`\`\`
-
-        ### 3. Install NPM Dependencies
-
-        \`\`\`bash
-            npm install && npm run dev
-            \`\`\`
-
-        ### 4. Environment Configuration
-
-        Copy the \`.env.example\` file to create your \`.env\` file:
-
-        \`\`\`bash
-            cp .env.example .env
-            \`\`\`
-
-        ### 5. Set Up Database
-
-        Configure your database settings in the \`.env\` file:
-
-        \`\`\`env
-            DB_CONNECTION=mysql
-            DB_HOST=127.0.0.1
-            DB_PORT=3306
-            DB_DATABASE=your_database_name
-            DB_USERNAME=your_database_user
-            DB_PASSWORD=your_database_password
-            \`\`\`
-
-        Additionally, set up your Google API key for PageSpeed Insights in the \`.env\` file:
-
-        \`\`\`env
-            GOOGLE_API_KEY=your_google_api_key
-            \`\`\`
-
-        If you don’t have a Google API key, follow these steps to obtain one:
-        1. Go to [Google Cloud Console](https://console.cloud.google.com/).
-        2. Create or select a project.
-        3. Enable the **PageSpeed Insights API**.
-        4. Create an API key and add it to your \`.env\` file.
-
-        ### 6. Migrate and Seed Database
-
-        Run the following command to create the tables and seed initial data:
-
-        \`\`\`bash
-            php artisan migrate --seed
-            \`\`\`
-
-        ### 7. Run the Development Server
-
-        Start the Laravel server:
-
-        \`\`\`bash
-            php artisan serve
-            \`\`\`
-
-        Your application should now be running at \`http://127.0.0.1:8000\`.
-
-        ## Usage
-
-        ### Get Metrics
-        - Navigate to the "Get Metrics" page.
-        - Enter a URL, select the desired categories and strategy, and click "Get Metrics".
-        - The application will fetch the metrics from Google PageSpeed Insights and display the results.
-
-        ### Save Metrics
-        - After fetching the metrics, click "Save Metrics" to store the results in the database for future reference.
-
-        ### View Metrics History
-        - Go to the "Metrics History" page to view all saved metrics records, including URL, performance metrics, and strategy.
-
-        ## Features
-
-        - **Google PageSpeed Insights Integration**: Fetches metrics using Google’s API, with categories such as Accessibility, Best Practices, Performance, PWA, and SEO.
-        - **Database Storage**: Saves metrics history for later review.
-        - **Frontend**: Styled with a Creative Tim template for a clean and professional user interface.
-
-        ## Project Structure
-
-        - **Controllers**: \`MetricController\` handles the main functionality for fetching and saving metrics.
-        - **Services**: \`PageSpeedService\` is responsible for communicating with the Google PageSpeed Insights API.
-        - **Views**: Blade templates are used for displaying forms, results, and history.
-
-        ## Credits
-
-        - **Template**: This project uses a Creative Tim template to enhance the frontend design.
-        - **SweetAlert2**: For displaying alerts in the user interface.
-
-        ## Notes
-
-        - Ensure you have a stable internet connection for fetching metrics from the Google API.
-        - The project relies on \`.env\` configuration for sensitive data such as database credentials and API keys. Make sure to keep this file secure.
-
-        ## License
-
-        This project is for educational purposes only.
-        `;
-        console.log(readme)
 
         document.getElementById('metricsForm').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -240,16 +114,104 @@
                             </div>
                              <hr class="dark horizontal my-0">
                             <div class="card-footer p-2 ps-3">
-                            <p class="mb-0 text-sm">${metric[1]?.manualDescription?? ""}</p>
                             </div>
                         </div>
                     </div>
                     `
 
+
                         });
+
                         document.getElementById('saveMetrics').style.display = 'block';
                     }
-                    document.getElementById('results').innerHTML = output;
+                    document.getElementById('results').innerHTML =
+                        `
+                        <div class="col-12">
+                          <div class="card">
+                            <div class="card-body">
+                              <h6 class="mb-0 ">Metrics</h6>
+                              <p class="text-sm "></p>
+                              <div class="pe-2">
+                                <div class="chart">
+                                  <canvas id="chart-bars" class="chart-canvas" height="170"></canvas>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                ` + output;
+                    var ctx = document.getElementById("chart-bars").getContext("2d");
+
+                    new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: Object.entries(dataMetrics).map(x => x[0]),
+                            datasets: [{
+                                label: "Views",
+                                tension: 0.4,
+                                borderWidth: 0,
+                                borderRadius: 4,
+                                borderSkipped: false,
+                                backgroundColor: "#43A047",
+                                data: Object.entries(dataMetrics).map(x => x[1].score),
+                                barThickness: 'flex'
+                            }, ],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false,
+                                }
+                            },
+                            interaction: {
+                                intersect: false,
+                                mode: 'index',
+                            },
+                            scales: {
+                                y: {
+                                    grid: {
+                                        drawBorder: false,
+                                        display: true,
+                                        drawOnChartArea: true,
+                                        drawTicks: false,
+                                        borderDash: [5, 5],
+                                        color: '#e5e5e5'
+                                    },
+                                    ticks: {
+                                        suggestedMin: 0,
+                                        suggestedMax: 500,
+                                        beginAtZero: true,
+                                        padding: 10,
+                                        font: {
+                                            size: 14,
+                                            lineHeight: 2
+                                        },
+                                        color: "#737373"
+                                    },
+                                },
+                                x: {
+                                    grid: {
+                                        drawBorder: false,
+                                        display: false,
+                                        drawOnChartArea: false,
+                                        drawTicks: false,
+                                        borderDash: [5, 5]
+                                    },
+                                    ticks: {
+                                        display: true,
+                                        color: '#737373',
+                                        padding: 10,
+                                        font: {
+                                            size: 14,
+                                            lineHeight: 2
+                                        },
+                                    }
+                                },
+                            },
+                        },
+                    });
                 });
         });
 

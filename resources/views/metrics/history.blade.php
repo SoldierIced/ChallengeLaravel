@@ -15,7 +15,7 @@
                 </div>
                 <div class="card-body px-0 pb-2">
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
+                        <table class="table align-items-center mb-0" id="TableHistory">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
@@ -92,6 +92,10 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+
 
 
 @endsection
