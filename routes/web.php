@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MetricController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/metrics', [MetricController::class, 'index'])->name('metrics.index');
+Route::post('/get-metrics', [MetricController::class, 'getMetrics'])->name('metrics.get');
+Route::post('/save-metrics', [MetricController::class, 'saveMetrics'])->name('metrics.save');
+Route::get('/metrics/history', [MetricController::class, 'history'])->name('metrics.history');
