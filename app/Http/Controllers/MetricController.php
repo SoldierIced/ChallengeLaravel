@@ -34,11 +34,20 @@ class MetricController extends Controller
     public function getMetrics(Request $request)
     {
         // Validate input data
-        $request->validate([
-            'url' => 'required|url',
-            'categories' => 'required|array',
-            'strategy' => 'required|exists:strategies,name',
-        ]);
+        try {
+            $request->validate([
+                'url' => 'required|url',
+                'categories' => 'required|array',
+                'strategy' => 'required|exists:strategies,name',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $error = collect($e->errors())->flatten()->join(' ');
+            return response()->json([
+                'status' => 'error',
+                'error' => $error
+            ], 422); // 422 Unprocessable Entity
+        }
+
 
         $url = $request->input('url');
         $categories = $request->input('categories');

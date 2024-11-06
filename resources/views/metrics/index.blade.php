@@ -6,56 +6,98 @@
 
 @section('content')
 
-    <form id="metricsForm" class="text-start">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">@yield('header')</h6>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2 my-2">
+                    <form id="metricsForm" class="text-start container">
+                        <div class="ms-md-auto align-items-center">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">URL:</label>
+                                <input type="text" class="form-control" name="url" required>
 
-        <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-            <div class="input-group input-group-outline">
-                <label class="form-label">URL:</label>
-                <input type="text" class="form-control" value="http://broobe.com" name="url" required>
+                            </div>
+                        </div>
+                        <div class="my-2">
+                            <h6 class="text-uppercase text-body text-xs font-weight-bolder">Categories</h6>
+                            <ul class=" row">
+                                @foreach ($categories as $category)
+                                    <li class="list-group-item col-12 col-md-4 border-0 px-0">
+                                        <div class="form-check form-switch ps-2">
+                                            <input class="form-check-input ms-auto" type="checkbox" name="categories[]"
+                                                value="{{ $category->name }}">
+                                            <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
+                                                for="flexSwitchCheckDefault">{{ $category->name }}</label>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
 
+                        <div class="form-group">
+                            <label for="strategy">Strategy:</label>
+                            <select name="strategy" class="form-control" id="StrategyId" required>
+                                @foreach ($strategies as $strategy)
+                                    <option value="{{ $strategy->name }}">{{ $strategy->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary mt-3" id="submitButton">Get Metrics</button>
+                    </form>
+                </div>
             </div>
         </div>
-        <div class="card-body p-3">
-            <h6 class="text-uppercase text-body text-xs font-weight-bolder">Categories</h6>
-            <ul class="list-group">
-                @foreach ($categories as $category)
-                    <li class="list-group-item border-0 px-0">
-                        <div class="form-check form-switch ps-0">
-                            <input class="form-check-input ms-auto" type="checkbox" name="categories[]"
-                                value="{{ $category->name }}">
-                            <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-                                for="flexSwitchCheckDefault">{{ $category->name }}</label>
-                        </div>
-                    </li>
-                @endforeach
-            </ul>
+        <div class="col-12" style="display:none;" id="colMetrics">
+            <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">Metrics</h6>
+                    </div>
+                </div>
+                <div class="container px-0 pb-2">
+                    <div id="results" class="row gx-3">
+                    </div>
+                    <button id="saveMetrics" class="btn btn-success mt-3" style="display:none;">Save Metrics</button>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group mt-3">
-            <label for="strategy">Strategy:</label>
-            <select name="strategy" class="form-control" required>
-                @foreach ($strategies as $strategy)
-                    <option value="{{ $strategy->name }}">{{ $strategy->name }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary mt-3" id="submitButton">Get Metrics</button>
-    </form>
-
-    <div id="results" class="row">
-
     </div>
-    <button id="saveMetrics" class="btn btn-success mt-3" style="display:none;">Save Metrics</button>
+
 @endsection
 
 @section('scripts')
     <script>
         let dataMetrics = {};
 
+        function isValidURL(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        $("#StrategyId").select2();
         document.getElementById('metricsForm').addEventListener('submit', function(event) {
             event.preventDefault();
+            if (!isValidURL(this.url.value)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'URL not valid',
+                    text: "",
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
             $("#submitButton").attr("disabled", "disabled")
+            document.getElementById('colMetrics').style.display = 'none';
+
             Swal.fire({
                 title: 'Please wait, the transaction is being processed',
                 showConfirmButton: false,
@@ -84,49 +126,52 @@
                     $("#submitButton").attr("disabled", false)
 
                     console.log(data, "DATA?")
-                    let output = '<h3>Metrics Results:</h3>';
+                    let output = '';
                     if (data.status == "error") {
 
 
+                        document.getElementById('saveMetrics').style.display = 'none';
                         Swal.fire({
                             icon: 'error',
                             title: 'Transaction Failed',
                             text: data.response.error,
                             confirmButtonText: 'OK'
                         });
+
                     } else {
                         dataMetrics = (data.response?.lighthouseResult?.categories);
 
                         Object.entries(dataMetrics).forEach((metric) => {
-                            output += `<div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                        <div class="card">
-                            <div class="card-header p-2 ps-3">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <p class="text-sm mb-0 text-capitalize">${metric[0]}</p>
-                                        <h4 class="mb-0">${metric[1].score} </h4>
-                                    </div>
-                                    <div
-                                        class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                                       <i class="material-symbols-rounded opacity-10">leaderboard</i>
-                                    </div>
+                            output +=
+                                `<div class="col-xl-6 col-sm-6 my-3 ">
+                                        <div class="card-header p-2 ps-3">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <p class="text-sm mb-0 text-capitalize">${metric[0]}</p>
+                                                    <h4 class="mb-0">${metric[1].score} </h4>
+                                                </div>
+                                                <div
+                                                    class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
+                                                <i class="material-symbols-rounded opacity-10">leaderboard</i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="dark horizontal my-0">
+                                        <div class="card-footer p-2 ps-3">
+                                        </div>
                                 </div>
-                            </div>
-                             <hr class="dark horizontal my-0">
-                            <div class="card-footer p-2 ps-3">
-                            </div>
-                        </div>
-                    </div>
                     `
 
 
                         });
 
                         document.getElementById('saveMetrics').style.display = 'block';
+                        document.getElementById('colMetrics').style.display = 'block';
+
                     }
                     document.getElementById('results').innerHTML =
                         `
-                        <div class="col-12">
+                        <div class="col-12 my-3">
                           <div class="card">
                             <div class="card-body">
                               <h6 class="mb-0 ">Metrics</h6>
@@ -236,7 +281,10 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message || 'Metrics saved successfully');
+                    Swal.fire({
+                        title: 'Metrics saved successfully',
+                        showConfirmButton: true,
+                    });
                 });
         });
     </script>

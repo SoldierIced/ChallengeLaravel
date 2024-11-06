@@ -6,7 +6,7 @@
                     ©
                     <script>
                         document.write(new Date().getFullYear())
-                    </script>2024,
+                    </script>,
                     made with <i class="fa fa-heart" aria-hidden="true"></i> by
                     <a href="https://www.linkedin.com/in/nehuenfortes/" class="font-weight-bold" target="_blank">Nehuen
                         Fortes</a>
@@ -14,15 +14,14 @@
             </div>
             <div class="col-lg-6">
                 <ul class="nav nav-footer justify-content-center justify-content-lg-end">
-                    <li class="nav-item">
-                        <a href="https://www.creative-tim.com" class="nav-link text-muted" target="_blank">Template
-                            Creative
-                            Tim</a>
-                    </li>
-                    <li class="nav-item">
+                    {{--  <li class="nav-item">
+                        <a href="https://www.creative-tim.com" class="nav-link text-muted" target="_blank">
+                            </a>
+                    </li>  --}}
+                    {{--  <li class="nav-item">
                         <a href="https://www.creative-tim.com/license" class="nav-link pe-0 text-muted"
                             target="_blank">License</a>
-                    </li>
+                    </li>  --}}
                 </ul>
             </div>
         </div>
